@@ -41,7 +41,6 @@ import os.path
 import pprint       # only for debugging
 import sys
 import copy
-import cgi          # for HTML escaping of variables
 import urllib.parse # for URL escaping of variables
 import pickle      # for template compilation
 import gettext
