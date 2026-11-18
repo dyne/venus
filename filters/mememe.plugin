@@ -497,7 +497,7 @@ for i in range(0,len(weighted_links)):
   if count >= 10: break
 
 # remove ul when there are no memes
-if memes_ul.lsCountNode() < 1:
+if not memes_ul.children:
   memes_ul.unlinkNode()
 
 log.info("Writing " + MEMES_ATOM)
