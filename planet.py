@@ -76,15 +76,14 @@ if __name__ == "__main__":
     if debug_splice:
         from planet import logger
         logger.info('writing debug.atom')
-        debug=open('debug.atom','w')
-        try:
-            from lxml import etree
-            from io import StringIO
-            tree = etree.tostring(etree.parse(StringIO(doc.toxml())))
-            debug.write(etree.tostring(tree, pretty_print=True))
-        except:
-            debug.write(doc.toprettyxml(indent='  ', encoding='utf-8'))
-        debug.close
+        with open('debug.atom','w'):
+            try:
+                from lxml import etree
+                from io import StringIO
+                tree = etree.tostring(etree.parse(StringIO(doc.toxml())))
+                debug.write(etree.tostring(tree, pretty_print=True))
+            except ImportError:
+                debug.write(doc.toprettyxml(indent='  ', encoding='utf-8'))
 
     splice.apply(doc.toxml('utf-8'))
 
