@@ -8,7 +8,7 @@ def csv2config(input, config=None):
         input = csv.StringIO(input)
 
     if not config:
-        config = ConfigParser()
+        config = ConfigParser(interpolation=None)
 
     reader = csv.DictReader(input)
     for row in reader:
@@ -24,7 +24,7 @@ def csv2config(input, config=None):
 if __name__ == "__main__":
     # small main program which converts CSV into config.ini format
     import sys, urllib.request, urllib.parse, urllib.error
-    config = ConfigParser()
+    config = ConfigParser(interpolation=None)
     for input in sys.argv[1:]:
         csv2config(urllib.request.urlopen(input), config)
     config.write(sys.stdout)

@@ -10,7 +10,7 @@ class OpmlTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.config = ConfigParser()
+        self.config = ConfigParser(interpolation=None)
 
     #
     # Element

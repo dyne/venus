@@ -30,7 +30,7 @@ import os, sys, re, urllib.request, urllib.parse, urllib.error
 from configparser import ConfigParser
 from urllib.parse import urljoin
 
-parser = ConfigParser()
+parser = ConfigParser(interpolation=None)
 
 planet_predefined_options = ['filters']
 
@@ -137,7 +137,7 @@ def __init__():
 def load(config_files):
     """ initialize and load a configuration"""
     global parser
-    parser = ConfigParser()
+    parser = ConfigParser(interpolation=None)
     parser.read(config_files)
 
     from . import config
@@ -165,7 +165,7 @@ def load(config_files):
                         dirs.append(os.path.dirname(config_file))
 
                 # read in the theme
-                parser = ConfigParser()
+                parser = ConfigParser(interpolation=None)
                 parser.read(theme_file)
                 bom = config.bill_of_materials()
 
@@ -240,14 +240,14 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
             
         try:
             if use_cache:
-                cached_config = ConfigParser()
+                cached_config = ConfigParser(interpolation=None)
                 cached_config.read(cache_filename)
                 for option in cached_config.options(list):
                      options[option] = cached_config.get(list,option)
         except:
             pass
 
-        cached_config = ConfigParser()
+        cached_config = ConfigParser(interpolation=None)
         cached_config.add_section(list)
         for key, value in options.items():
             cached_config.set(list, key, value)

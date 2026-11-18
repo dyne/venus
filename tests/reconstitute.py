@@ -18,7 +18,7 @@ if __name__ == "__main__":
         else:
             break
 
-    parser = configparser.ConfigParser()
+    parser = configparser.ConfigParser(interpolation=None)
     parser.add_section('Planet')
     parser.add_section(sys.argv[1])
     work = reduce(os.path.join, ['tests','work','reconsititute'], venus_base)

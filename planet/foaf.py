@@ -187,7 +187,7 @@ def friend2config(friend_model, friend, seeAlso, subconfig, data):
 
 if __name__ == "__main__":
     import sys, urllib.request, urllib.parse, urllib.error
-    config = ConfigParser()
+    config = ConfigParser(interpolation=None)
 
     for uri in sys.argv[1:]:
         config.add_section(uri)

@@ -45,7 +45,7 @@ class FoafTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.config = ConfigParser()
+        self.config = ConfigParser(interpolation=None)
         self.config.add_section(blogroll)
 
     def tearDown(self):
