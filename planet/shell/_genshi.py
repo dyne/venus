@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO, StringIO
 from xml.sax.saxutils import escape
 
 from genshi.input import HTMLParser, XMLParser
@@ -98,7 +98,7 @@ def run(script, doc, output_file=None, options={}):
 
         # annotate each entry
         new_date_format = config.new_date_format()
-        vars = feedparser.parse(StringIO(doc))
+        vars = feedparser.parse(BytesIO(doc.encode()))
         vars.feeds = [value for name,value in feeds]
         last_feed = None
         last_date = None
