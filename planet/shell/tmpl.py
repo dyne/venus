@@ -185,8 +185,8 @@ def _source_info(node):
     """Convert an Atom source-like DOM node into a FeedParserDict."""
     atom = 'http://www.w3.org/2005/Atom'
     planet_ns = 'http://planet.intertwingly.net/'
-    source_xml = '<feed xmlns="%s">%s</feed>' % (
-        atom, ''.join([child.toxml() for child in node.childNodes]))
+    source_xml = '<feed xmlns="%s" xmlns:planet="%s">%s</feed>' % (
+        atom, planet_ns, ''.join([child.toxml() for child in node.childNodes]))
     source = feedparser.parse(source_xml).feed
     for child in node.childNodes:
         if child.nodeType != child.ELEMENT_NODE:
