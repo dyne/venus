@@ -20,13 +20,13 @@ for pattern,replacement in [
   (re.compile('''<[^>]* label=['"]([^'"]*)['"].*?>'''),r' \1 '),
   (re.compile('''<[^>]* term=['"]([^'"]*)['"].*?>'''),r' \1 '),
   (re.compile('<.*?>'),' '),
-  (re.compile('\s+'),' '),
+  (re.compile(r'\s+'),' '),
   (re.compile('&gt;'),'>'),
   (re.compile('&lt;'),'<'),
   (re.compile('&apos;'),"'"),
   (re.compile('&quot;'),'"'),
   (re.compile('&amp;'),'&'),
-  (re.compile('\s+'),' ')
+  (re.compile(r'\s+'),' ')
 ]:
   data=pattern.sub(replacement,data)
 

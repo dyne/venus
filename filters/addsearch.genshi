@@ -7,7 +7,7 @@
     <form><input name="q"/></form>
   </div>
 
-  <?python from urlparse import urljoin ?>
+  <?python from urllib.parse import urljoin ?>
 
   <!--! insert opensearch autodiscovery link -->
   <head py:match="head" py:attrs="select('@*')">

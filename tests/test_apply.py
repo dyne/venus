@@ -1,13 +1,30 @@
 #!/usr/bin/env python
 
 import unittest, os, shutil
-from planet import config, splice, logger
+from planet import config, splice
 from xml.dom import minidom
+
+try:
+    import libxml2
+    import libxslt
+    XSLT_AVAILABLE = True
+except ImportError:
+    XSLT_AVAILABLE = shutil.which('xsltproc') is not None
+
+try:
+    import genshi
+    GENSHI_AVAILABLE = True
+except:
+    GENSHI_AVAILABLE = False
 
 workdir = 'tests/work/apply'
 configfile = 'tests/data/apply/config-%s.ini'
 testfeed = 'tests/data/apply/feed.xml'
 
+@unittest.skipUnless(
+    XSLT_AVAILABLE,
+    "libxml2 or xsltproc is not available => can't test XSLT templates"
+)
 class ApplyTest(unittest.TestCase):
     def setUp(self):
         testfile = open(testfeed)
@@ -53,6 +70,10 @@ class ApplyTest(unittest.TestCase):
         config.load(configfile % 'fancy')
         self.apply_fancy()
 
+    @unittest.skipUnless(
+        GENSHI_AVAILABLE,
+        "Genshi is not available => can't test genshi filters"
+    )
     def test_apply_genshi_fancy(self):
         config.load(configfile % 'genshi')
         self.apply_fancy()
@@ -102,33 +123,3 @@ class ApplyTest(unittest.TestCase):
         # verify that index.html is well formed, has content, and xml:lang
         html = open(os.path.join(workdir, 'index.html')).read()
         self.assertTrue(html.find(' href="http://example.com/default.css"')>=0)
-
-from . import test_filter_genshi
-for method in dir(test_filter_genshi.GenshiFilterTests):
-    if method.startswith('test_'): break
-else:
-    delattr(ApplyTest,'test_apply_genshi_fancy')
-
-try:
-    import libxml2
-except ImportError:
-
-    delattr(ApplyTest,'test_apply_filter_mememe')
-
-    try:
-        import win32pipe
-        (stdin,stdout) = win32pipe.popen4('xsltproc -V', 't')
-        stdin.close()
-        stdout.read()
-        try:
-            exitcode = stdout.close()
-        except IOError:
-            exitcode = -1
-    except:
-        import subprocess
-        exitcode, output = subprocess.getstatusoutput('xsltproc -V')
-
-    if exitcode:
-        logger.warn("xsltproc is not available => can't test XSLT templates")
-        for method in dir(ApplyTest):
-            if method.startswith('test_'):  delattr(ApplyTest,method)

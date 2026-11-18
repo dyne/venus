@@ -18,7 +18,7 @@ def opml2config(opml, config=None):
             opml = opml.decode('windows-1252')
 
     if not config:
-        config = ConfigParser()
+        config = ConfigParser(interpolation=None)
 
     opmlParser = OpmlParser(config)
 
@@ -37,7 +37,7 @@ def opml2config(opml, config=None):
 
 # Parse OPML via either SAX or SGML
 class OpmlParser(ContentHandler,SGMLParser):
-    entities = re.compile('&(#?\w+);')
+    entities = re.compile(r'&(#?\w+);')
 
     def __init__(self, config):
         ContentHandler.__init__(self)
@@ -155,7 +155,7 @@ cp1252 = {
 if __name__ == "__main__":
     # small main program which converts OPML into config.ini format
     import sys, urllib.request, urllib.parse, urllib.error
-    config = ConfigParser()
+    config = ConfigParser(interpolation=None)
     for opml in sys.argv[1:]:
         opml2config(urllib.request.urlopen(opml), config)
     config.write(sys.stdout)

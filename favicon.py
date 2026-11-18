@@ -72,7 +72,7 @@ else:
   fetch(0, fetch_queue, icons)
 
 # produce config file
-config = ConfigParser()
+config = ConfigParser(interpolation=None)
 for sub, icon in icons.items():
   config.add_section(sub)
   config.set(sub, 'favicon', icon)

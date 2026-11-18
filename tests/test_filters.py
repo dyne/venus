@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
+import shutil
 import unittest, xml.dom.minidom
-from planet import shell, config, logger
+from planet import shell, config
+
+try:
+    import libxml2
+    LIBXML2_AVAILABLE = True
+except ImportError:
+    LIBXML2_AVAILABLE = False
 
 class FilterTests(unittest.TestCase):
 
@@ -69,6 +76,7 @@ class FilterTests(unittest.TestCase):
             'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
             'in \u2026', excerpt.firstChild.firstChild.nodeValue)
 
+    @unittest.skipIf(shutil.which("sed") is None, "sed is not available")
     def test_stripAd_yahoo(self):
         testfile = 'tests/data/filter/stripAd-yahoo.xml'
         config.load('tests/data/filter/stripAd-yahoo.ini')
@@ -82,10 +90,12 @@ class FilterTests(unittest.TestCase):
         self.assertEqual('before--after',
             excerpt.firstChild.firstChild.nodeValue)
 
+    @unittest.skipUnless(LIBXML2_AVAILABLE, "libxml2 is not available")
     def test_xpath_filter1(self):
         config.load('tests/data/filter/xpath-sifter.ini')
         self.verify_xpath()
 
+    @unittest.skipUnless(LIBXML2_AVAILABLE, "libxml2 is not available")
     def test_xpath_filter2(self):
         config.load('tests/data/filter/xpath-sifter2.ini')
         self.verify_xpath()
@@ -151,39 +161,3 @@ class FilterTests(unittest.TestCase):
         output = shell.run(filter, open(testfile).read(), mode="filter")
         self.assertTrue(output.find('/>')<0)
         self.assertTrue(output.find('</script>')>=0)
-
-try:
-    from subprocess import Popen, PIPE
-
-    _no_sed = True
-    if _no_sed:
-        try:
-            # Python 2.5 bug 1704790 workaround (alas, Unix only)
-            import subprocess
-            if subprocess.getstatusoutput('sed --version')[0]==0: _no_sed = False 
-        except:
-            pass
-
-    if _no_sed:
-        try:
-            sed = Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
-            sed.communicate()
-            if sed.returncode == 0: _no_sed = False
-        except WindowsError:
-            pass
-
-    if _no_sed:
-        logger.warn("sed is not available => can't test stripAd_yahoo")
-        del FilterTests.test_stripAd_yahoo      
-
-    try:
-        import libxml2
-    except:
-        logger.warn("libxml2 is not available => can't test xpath_sifter")
-        del FilterTests.test_xpath_filter1
-        del FilterTests.test_xpath_filter2
-
-except ImportError:
-    logger.warn("Popen is not available => can't test standard filters")
-    for method in dir(FilterTests):
-        if method.startswith('test_'):  delattr(FilterTests,method)

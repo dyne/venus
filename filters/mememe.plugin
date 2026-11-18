@@ -283,7 +283,7 @@ class html(sgmllib.SGMLParser):
   # parse out the first autodiscovery link
   def start_link(self, attrs):
     if self.feedurl: return
-    attrs = dict(map(lambda (k,v): (k.lower(),v), attrs))
+    attrs = {k.lower(): v for k, v in attrs}
     if not 'rel' in attrs: return
     rels = attrs['rel'].split(' ')
     if 'alternate' not in rels: return
@@ -415,14 +415,14 @@ for i in range(0,len(weighted_links)):
     if not title: title = link.strip('/').split('/')[-1]
 
   # dehtmlize
-  title = re.sub('&(\w+);',
+  title = re.sub(r'&(\w+);',
     lambda n: entitydefs.get(n.group(1), '&'+n.group(1)+';'), title)
-  title = re.sub('&#(\d+);',lambda n: chr(int(n.group(1))), title)
-  title = re.sub('&#x(\w+);',lambda n: chr(int(n.group(1),16)), title)
+  title = re.sub(r'&#(\d+);',lambda n: chr(int(n.group(1))), title)
+  title = re.sub(r'&#x(\w+);',lambda n: chr(int(n.group(1),16)), title)
 
   # title too long?  Insert zero width spaces where appropriate
   if len(title.strip())>0 and max(map(len,title.split())) > 30:
-    title=re.sub('(\W+)','\\1\u200b',title)
+    title=re.sub(r'(\W+)','\\1\u200b',title)
 
   # save the entry title (it is used later)
   entry_title = title.strip()
@@ -497,7 +497,7 @@ for i in range(0,len(weighted_links)):
   if count >= 10: break
 
 # remove ul when there are no memes
-if memes_ul.lsCountNode() < 1:
+if not memes_ul.children:
   memes_ul.unlinkNode()
 
 log.info("Writing " + MEMES_ATOM)

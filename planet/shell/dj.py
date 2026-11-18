@@ -16,26 +16,29 @@ def run(script, doc, output_file=None, options={}):
     """process a Django template file"""
 
     # this is needed to use the Django template system as standalone
-    # I need to re-import the settings at every call because I have to 
-    # set the TEMPLATE_DIRS variable programmatically
+    import django
     from django.conf import settings
-    #settings._wrapped=None
-    try:
-        settings.configure(
-            DEBUG=True, TEMPLATE_DEBUG=True, 
-            TEMPLATE_DIRS=(os.path.dirname(script),)
-            )
-    except RuntimeError:
-        pass
-    from django.template import Context
-    from django.template.loader import get_template
+    from django.template.backends.django import DjangoTemplates
+
+    if not settings.configured:
+        settings.configure()
+        django.setup()
+
+    backend = DjangoTemplates({
+        'NAME': 'django',
+        'DIRS': [os.path.dirname(script)],
+        'APP_DIRS': False,
+        'OPTIONS': {
+            'autoescape': config.django_autoescape() == 'on',
+            'debug': True,
+        },
+    })
 
     # set up the Django context by using the default htmltmpl 
     # datatype converters
-    context = Context(autoescape=(config.django_autoescape()=='on'))
-    context.update(tmpl.template_info(doc))
+    context = dict(tmpl.template_info(doc))
     context['Config'] = config.planet_options()
-    t = get_template(script)
+    t = backend.get_template(script)
 
     if output_file:
         reluri = os.path.splitext(os.path.basename(output_file))[0]

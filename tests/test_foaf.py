@@ -3,7 +3,13 @@
 import unittest, os, shutil
 from planet.foaf import foaf2config
 from configparser import ConfigParser
-from planet import config, logger
+from planet import config
+
+try:
+    import rdflib
+    RDFLIB_AVAILABLE = True
+except ImportError:
+    RDFLIB_AVAILABLE = False
 
 workdir = 'tests/work/config/cache'
 
@@ -39,13 +45,17 @@ test_foaf_document = '''
 </rdf:RDF> 
 '''.strip()
 
+@unittest.skipUnless(
+    RDFLIB_AVAILABLE,
+    "RDFLib is not available => can't test FOAF reading lists"
+)
 class FoafTest(unittest.TestCase):
     """
     Test the foaf2config function
     """
 
     def setUp(self):
-        self.config = ConfigParser()
+        self.config = ConfigParser(interpolation=None)
         self.config.add_section(blogroll)
 
     def tearDown(self):
@@ -115,13 +125,6 @@ class FoafTest(unittest.TestCase):
         'http://thefigtrees.net/lee/life/atom.xml',
         'http://torrez.us/feed/rdf'], feeds)
 
-# these tests only make sense if libRDF is installed
-try:
-    import RDF
-except:
-    logger.warn("Redland RDF is not available => can't test FOAF reading lists")
-    for key in list(FoafTest.__dict__.keys()):
-        if key.startswith('test_'): delattr(FoafTest, key)
 
 if __name__ == '__main__':
     unittest.main()

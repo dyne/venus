@@ -1,8 +1,19 @@
 #!/usr/bin/env python
 
+import shutil
 import unittest, xml.dom.minidom
-from planet import shell, config, logger
+from planet import shell, config
 
+try:
+    import libxslt
+    LIBXSLT_AVAILABLE = True
+except ImportError:
+    LIBXSLT_AVAILABLE = shutil.which("xsltproc") is not None
+
+@unittest.skipUnless(
+    LIBXSLT_AVAILABLE,
+    "libxslt is not available => can't test xslt filters",
+)
 class XsltFilterTests(unittest.TestCase):
 
     def test_xslt_filter(self):
@@ -23,22 +34,3 @@ class XsltFilterTests(unittest.TestCase):
         self.assertTrue(output.find('<form><input name="q"/></form>')>=0)
         self.assertTrue(output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"')>=0)
         self.assertTrue(output.find('</script>')>=0)
-
-try:
-    import libxslt
-except:
-    try:
-        try:
-            # Python 2.5 bug 1704790 workaround (alas, Unix only)
-            import subprocess
-            if subprocess.getstatusoutput('xsltproc --version')[0] != 0:
-                raise ImportError
-        except:
-            from subprocess import Popen, PIPE
-            xsltproc=Popen(['xsltproc','--version'],stdout=PIPE,stderr=PIPE)
-            xsltproc.communicate()
-            if xsltproc.returncode != 0: raise ImportError
-    except:
-        logger.warn("libxslt is not available => can't test xslt filters")
-        del XsltFilterTests.test_xslt_filter
-        del XsltFilterTests.test_addsearch_filter

@@ -59,7 +59,7 @@ def ncr2c(value):
         value=chr(int(value))
     return value
 
-nonalpha=re.compile('\W+',re.UNICODE)
+nonalpha=re.compile(r'\W+',re.UNICODE)
 def cssid(name):
     """ generate a css id from a name """
     if isinstance(name, bytes):
@@ -346,20 +346,20 @@ def reconstitute(feed, entry):
         'geo_long' in entry:
         location(xentry, (float)(entry.get('geo_long',None)), (float)(entry.get('geo_lat',None)))
     if 'georss_point' in entry:
-        coordinates = re.split('[,\s]', entry.get('georss_point'))
+        coordinates = re.split(r'[,\s]', entry.get('georss_point'))
         if len(coordinates) >= 2:
             location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
     elif 'georss_line' in entry:
-        coordinates = re.split('[,\s]', entry.get('georss_line'))
+        coordinates = re.split(r'[,\s]', entry.get('georss_line'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
     elif 'georss_circle' in entry:
-        coordinates = re.split('[,\s]', entry.get('georss_circle'))
+        coordinates = re.split(r'[,\s]', entry.get('georss_circle'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
     elif 'georss_box' in entry:
-        coordinates = re.split('[,\s]', entry.get('georss_box'))
+        coordinates = re.split(r'[,\s]', entry.get('georss_box'))
         location(xentry, ((float)(coordinates[1])+(float)(coordinates[3]))/2, ((float)(coordinates[0])+(float)(coordinates[2]))/2)
     elif 'georss_polygon' in entry:
-        coordinates = re.split('[,\s]', entry.get('georss_polygon'))
+        coordinates = re.split(r'[,\s]', entry.get('georss_polygon'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
 
     # author / contributor

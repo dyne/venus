@@ -20,7 +20,7 @@ class DocsTest(unittest.TestCase):
             if doc.endswith('.css') or doc.endswith('.js'): continue
 
             source = open(doc).read()
-            source = re.sub('&(\w+);', substitute_entity, source)
+            source = re.sub(r'&(\w+);', substitute_entity, source)
 
             try:
                 minidom.parseString(source)
