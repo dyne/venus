@@ -8,8 +8,8 @@ from planet.scrub import scrub
 testfiles = 'tests/data/reconstitute/%s.xml'
 
 class ReconstituteTest(unittest.TestCase):
-    desc_re = re.compile("Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
-    simple_re = re.compile("^(\S+) == (u?'[^']*'|\([0-9, ]+\))$")
+    desc_re = re.compile(r"Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
+    simple_re = re.compile(r"^(\S+) == (u?'[^']*'|\([0-9, ]+\))$")
 
     def eval(self, name):
         # read the test case

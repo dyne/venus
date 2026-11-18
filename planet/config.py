@@ -52,7 +52,7 @@ def __init__():
     # expand %(var) in lists
     def expand(list):
         output = []
-        wild = re.compile('^(.*)#{(\w+)}(.*)$')
+        wild = re.compile(r'^(.*)#{(\w+)}(.*)$')
         for file in list.split():
             match = wild.match(file)
             if match:

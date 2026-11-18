@@ -37,7 +37,7 @@ def opml2config(opml, config=None):
 
 # Parse OPML via either SAX or SGML
 class OpmlParser(ContentHandler,SGMLParser):
-    entities = re.compile('&(#?\w+);')
+    entities = re.compile(r'&(#?\w+);')
 
     def __init__(self, config):
         ContentHandler.__init__(self)

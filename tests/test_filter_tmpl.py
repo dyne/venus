@@ -7,9 +7,9 @@ from planet.shell import tmpl
 testfiles = 'tests/data/filter/tmpl/%s.%s'
 
 class FilterTmplTest(unittest.TestCase):
-    desc_feed_re = re.compile("Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
-    desc_config_re = re.compile(";\s*Description:\s*(.*?)\s*;\s*Expect:\s*(.*)")
-    simple_re = re.compile("^(\S+) == (u?'[^']*'|\([0-9, ]+\))$")
+    desc_feed_re = re.compile(r"Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
+    desc_config_re = re.compile(r";\s*Description:\s*(.*?)\s*;\s*Expect:\s*(.*)")
+    simple_re = re.compile(r"^(\S+) == (u?'[^']*'|\([0-9, ]+\))$")
 
     def eval_feed(self, name):
         # read the test case
