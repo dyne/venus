@@ -415,14 +415,14 @@ for i in range(0,len(weighted_links)):
     if not title: title = link.strip('/').split('/')[-1]
 
   # dehtmlize
-  title = re.sub('&(\w+);',
+  title = re.sub(r'&(\w+);',
     lambda n: entitydefs.get(n.group(1), '&'+n.group(1)+';'), title)
-  title = re.sub('&#(\d+);',lambda n: chr(int(n.group(1))), title)
-  title = re.sub('&#x(\w+);',lambda n: chr(int(n.group(1),16)), title)
+  title = re.sub(r'&#(\d+);',lambda n: chr(int(n.group(1))), title)
+  title = re.sub(r'&#x(\w+);',lambda n: chr(int(n.group(1),16)), title)
 
   # title too long?  Insert zero width spaces where appropriate
   if len(title.strip())>0 and max(map(len,title.split())) > 30:
-    title=re.sub('(\W+)','\\1\u200b',title)
+    title=re.sub(r'(\W+)','\\1\u200b',title)
 
   # save the entry title (it is used later)
   entry_title = title.strip()
