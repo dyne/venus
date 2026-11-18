@@ -283,7 +283,7 @@ class html(sgmllib.SGMLParser):
   # parse out the first autodiscovery link
   def start_link(self, attrs):
     if self.feedurl: return
-    attrs = dict(map(lambda (k,v): (k.lower(),v), attrs))
+    attrs = {k.lower(): v for k, v in attrs}
     if not 'rel' in attrs: return
     rels = attrs['rel'].split(' ')
     if 'alternate' not in rels: return
