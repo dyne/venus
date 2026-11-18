@@ -16,21 +16,28 @@ def load_accounts(config, section):
     return accounts
 
 def load_model(rdf, base_uri):
+    from urllib.parse import urlparse
+    from xml.sax import SAXParseException
 
-    if hasattr(rdf, 'find_statements'):
+    from rdflib import Graph
+
+    if isinstance(rdf, Graph):
         return rdf
 
     if hasattr(rdf, 'read'):
         rdf = rdf.read()
 
-    def handler(code, level, facility, message, line, column, byte, file, uri):
+    model = Graph()
+
+    # XXX: Redland RDF used to keep relative references alone whin a relative
+    # base URI is given. This is to emulate that behaviour.
+    public_id = base_uri if urlparse(base_uri).scheme else None
+    try:
+        model.parse(data=rdf, publicID=public_id, format='xml')
+    except SAXParseException:
+        # XXX: Redland RDF has kept the parse state before an error has
+        # happened.
         pass
-
-    from RDF import Model, Parser
-
-    model = Model()
-
-    Parser().parse_string_into_model(model,rdf,base_uri,handler)
 
     return model
 
@@ -44,7 +51,7 @@ def foaf2config(rdf, config, subject=None, section=None):
     if not section: section = config.sections().pop()
 
     try:
-        from RDF import Model, NS, Parser, Statement
+        from rdflib import Namespace, URIRef, Literal
     except:
         return
 
@@ -60,45 +67,41 @@ def foaf2config(rdf, config, subject=None, section=None):
 
     model = load_model(rdf, section)
 
-    dc   = NS('http://purl.org/dc/elements/1.1/')
-    foaf = NS('http://xmlns.com/foaf/0.1/')
-    rdfs = NS('http://www.w3.org/2000/01/rdf-schema#')
-    rdf = NS('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-    rss = NS('http://purl.org/rss/1.0/')
+    dc   = Namespace('http://purl.org/dc/elements/1.1/')
+    foaf = Namespace('http://xmlns.com/foaf/0.1/')
+    rdfs = Namespace('http://www.w3.org/2000/01/rdf-schema#')
+    rdf = Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+    rss = Namespace('http://purl.org/rss/1.0/')
 
-    for statement in model.find_statements(Statement(subject,foaf.weblog,None)):
-
-        # feed owner
-        person = statement.subject
-
+    for person, _, weblog in model.triples((subject, foaf.weblog, None)):
         # title is required (at the moment)
-        title = model.get_target(person,foaf.name)
-        if not title: title = model.get_target(statement.object,dc.title)
+        title = model.value(person, foaf.name)
+        if not title: title = model.value(weblog, dc.title)
         if not title: 
             continue
 
         # blog is optional
-        feed = model.get_target(statement.object,rdfs.seeAlso)
-        if feed and rss.channel == model.get_target(feed, rdf.type):
-            feed = str(feed.uri)
+        feed = model.value(weblog, rdfs.seeAlso)
+        if feed and rss.channel == model.value(feed, rdf.type):
+            feed = str(feed)
             if not config.has_section(feed):
                 config.add_section(feed)
                 config.set(feed, 'name', str(title))
 
         # now look for OnlineAccounts for the same person
         if accounts.keys():
-            for statement in model.find_statements(Statement(person,foaf.holdsAccount,None)):
-                rdfaccthome = model.get_target(statement.object,foaf.accountServiceHomepage)
-                rdfacctname = model.get_target(statement.object,foaf.accountName)
+            for _, _, account in model.triples((person, foaf.holdsAccount, None)):
+                rdfaccthome = model.value(account, foaf.accountServiceHomepage)
+                rdfacctname = model.value(account, foaf.accountName)
 
                 if not rdfaccthome or not rdfacctname: continue
 
-                if not rdfaccthome.is_resource() or str(rdfaccthome.uri) not in accounts: continue
+                if not isinstance(rdfaccthome, URIRef) or str(rdfaccthome) not in accounts: continue
 
-                if not rdfacctname.is_literal(): continue
+                if not isinstance(rdfacctname, Literal): continue
 
-                rdfacctname = rdfacctname.literal_value['string']
-                rdfaccthome = str(rdfaccthome.uri)
+                rdfacctname = str(rdfacctname)
+                rdfaccthome = str(rdfaccthome)
 
                 # shorten feed title a bit
                 try:
@@ -114,18 +117,16 @@ def foaf2config(rdf, config, subject=None, section=None):
         if depth > 0:
 
             # now the fun part, let's go after more friends
-            for statement in model.find_statements(Statement(person,foaf.knows,None)):
-                friend = statement.object
-
+            for _, _, friend in model.triples((person, foaf.knows, None)):
                 # let's be safe
-                if friend.is_literal(): continue
+                if isinstance(friend, Literal): continue
                 
-                seeAlso = model.get_target(friend,rdfs.seeAlso)
+                seeAlso = model.value(friend, rdfs.seeAlso)
 
                 # nothing to see
-                if not seeAlso or not seeAlso.is_resource(): continue
+                if not isinstance(seeAlso, URIRef): continue
 
-                seeAlso = str(seeAlso.uri)
+                seeAlso = str(seeAlso)
 
                 if not config.has_section(seeAlso):
                     config.add_section(seeAlso)
@@ -155,14 +156,14 @@ def copy_options(config, parent_section, child_section, overrides = {}):
 def friend2config(friend_model, friend, seeAlso, subconfig, data):
 
     try:
-        from RDF import Model, NS, Parser, Statement
+        from rdflib import Namespace, URIRef
     except:
         return
 
-    dc   = NS('http://purl.org/dc/elements/1.1/')
-    foaf = NS('http://xmlns.com/foaf/0.1/')
-    rdf = NS('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-    rdfs = NS('http://www.w3.org/2000/01/rdf-schema#')
+    dc   = Namespace('http://purl.org/dc/elements/1.1/')
+    foaf = Namespace('http://xmlns.com/foaf/0.1/')
+    rdf = Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+    rdfs = Namespace('http://www.w3.org/2000/01/rdf-schema#')
 
     # FOAF InverseFunctionalProperties
     ifps = [foaf.mbox, foaf.mbox_sha1sum, foaf.jabberID, foaf.aimChatID, 
@@ -170,18 +171,15 @@ def friend2config(friend_model, friend, seeAlso, subconfig, data):
 
     model = load_model(data, seeAlso)
 
-    for statement in model.find_statements(Statement(None,rdf.type,foaf.Person)):
-
-        samefriend = statement.subject
-        
+    for samefriend, _, _ in model.triples((None, rdf.type, foaf.Person)):
         # maybe they have the same uri
-        if friend.is_resource() and samefriend.is_resource() and friend == samefriend:
+        if isinstance(friend, URIRef) and isinstance(samefriend, URIRef) and friend == samefriend:
             foaf2config(model, subconfig, samefriend)
             return
 
         for ifp in ifps:
-            object = model.get_target(samefriend,ifp)
-            if object and object == friend_model.get_target(friend, ifp):
+            prop = model.value(samefriend, ifp)
+            if prop and prop == friend_model.value(friend, ifp):
                 foaf2config(model, subconfig, samefriend)
                 return
 

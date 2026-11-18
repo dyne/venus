@@ -6,10 +6,10 @@ from configparser import ConfigParser
 from planet import config
 
 try:
-    import RDF
-    RDF_AVAILABLE = True
+    import rdflib
+    RDFLIB_AVAILABLE = True
 except ImportError:
-    RDF_AVAILABLE = False
+    RDFLIB_AVAILABLE = False
 
 workdir = 'tests/work/config/cache'
 
@@ -46,8 +46,8 @@ test_foaf_document = '''
 '''.strip()
 
 @unittest.skipUnless(
-    RDF_AVAILABLE,
-    "Redland RDF is not available => can't test FOAF reading lists"
+    RDFLIB_AVAILABLE,
+    "RDFLib is not available => can't test FOAF reading lists"
 )
 class FoafTest(unittest.TestCase):
     """
