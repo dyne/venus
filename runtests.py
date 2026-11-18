@@ -45,4 +45,6 @@ except Exception:
     raise
 
 # run test suite
-unittest.TextTestRunner(verbosity=verbosity).run(suite)
+result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
+if not result.wasSuccessful() or result.testsRun == 0:
+    sys.exit(1)
