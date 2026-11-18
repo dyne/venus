@@ -3,9 +3,19 @@
 import os.path
 import unittest, xml.dom.minidom, datetime
 
-from planet import config, logger
+from planet import config
 from planet.shell import dj
 
+try:
+    from django import VERSION
+    DJANGO_AVAILABLE = True
+except ImportError:
+    DJANGO_AVAILABLE = False
+
+@unittest.skipUnless(
+    DJANGO_AVAILABLE,
+    "Django is not available => can't test django filters"
+)
 class DjangoFilterTests(unittest.TestCase):
 
     def test_django_filter(self):
@@ -43,11 +53,3 @@ class DjangoFilterTests(unittest.TestCase):
         results = dj.run(
             os.path.realpath('tests/data/filter/django/config.html.dj'), input)
         self.assertEqual(results, "Django on Venus\n")
-        
-
-try:
-    from django.conf import settings
-except ImportError:
-    logger.warn("Django is not available => can't test django filters")
-    for method in dir(DjangoFilterTests):
-        if method.startswith('test_'):  delattr(DjangoFilterTests,method)
