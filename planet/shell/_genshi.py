@@ -13,30 +13,20 @@ feed_types = [
     'application/rdf+xml'
 ]
 
-def norm(value):
-    """ Convert to Unicode """
-    if hasattr(value,'items'):
-        return dict([(norm(n),norm(v)) for n,v in value.items()])
-
-    try:
-        return value.decode('utf-8')
-    except:
-        return value.decode('iso-8859-1')
-
 def find_config(config, feed):
     # match based on self link
     for link in feed.links:
         if 'rel' in link and link.rel=='self':
             if 'type' in link and link.type in feed_types:
                 if 'href' in link and link.href in subscriptions:
-                    return norm(dict(config.parser.items(link.href)))
+                    return dict(config.parser.items(link.href))
     
     # match based on name
     if 'planet_name' in feed:
         for sub in subscriptions:
             if config.parser.has_option(sub, 'name') and \
-                norm(config.parser.get(sub, 'name')) == feed.planet_name:
-                return norm(dict(config.parser.items(sub)))
+                config.parser.get(sub, 'name') == feed.planet_name:
+                return dict(config.parser.items(sub))
 
     log.warning('Could not match subscription to config: %s', feed.link)
     return {}
@@ -90,10 +80,10 @@ def run(script, doc, output_file=None, options={}):
         sources = config.cache_sources_directory()
         for sub in config.subscriptions():
             data=feedparser.parse(filename(sources,sub))
-            data.feed.config = norm(dict(config.parser.items(sub)))
+            data.feed.config = dict(config.parser.items(sub))
             if 'link' in data.feed:
                 feeds.append((data.feed.config.get('name',''),data.feed))
-            subscriptions.append(norm(sub))
+            subscriptions.append(sub)
         feeds.sort()
 
         # annotate each entry
